@@ -1,0 +1,37 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void bubblesort(char input[][51]);
+
+int main() {
+	char input[5][51];
+	int i;
+	printf("Enter five english character strings\n");
+	for (i = 0; i < 5; i++) {
+		fgets(input[i], sizeof(input[i]), stdin);
+		input[i][strcspn(input[i], "\n")] = '\0';
+	}
+	while(strlen(input[0])<50) {
+		bubblesort(input);
+		printf("The string in sorted order:");
+		for (i = 0; i < 5; i++) {
+			printf("%s\n", input[i]);
+		}
+	}
+	printf("NO you cant pass more than 50 characters");
+	return 0;
+}
+void bubblesort(char input[][51]) {
+	char temp[50];
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (strcmp(&input[j][0], input[j + 1]) > 0) {
+				strcpy(temp, input[j]);
+				strcpy(input[j], input[j + 1]);
+				strcpy(input[j + 1], temp);
+			}
+		}
+	}
+}
