@@ -1,0 +1,254 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+typedef struct product {
+    char product_no[5]; 
+    char name[52]; 
+    long price;
+    long stock;
+} Product;
+
+void bersihkanBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+int bacaString(char* buffer, int size, const char* prompt) {
+    printf("%s", prompt);
+    if (fgets(buffer, size, stdin) == NULL) return 0;
+    if (buffer[0] == '\n') {
+        printf("[ERROR] Input tidak boleh kosong! Silakan ulangi.\n");
+        return 0;
+    }
+    if (strchr(buffer, '\n') == NULL) {
+        printf("[ERROR] Input melebihi kapasitas maksimal! Silakan ulangi.\n");
+        bersihkanBuffer();
+        return 0;
+    }
+    buffer[strcspn(buffer, "\n")] = '\0';
+    return 1;
+}
+
+int cekValiditasNomor(const char* str) {
+    if (strcmp(str, "-1") == 0) return 2;
+    if (strlen(str) != 3) return 0;
+    for (int i = 0; i < 3; i++) {
+        if (!isdigit(str[i])) return 0;
+    }
+    return 1;
+}
+
+int cariProduk(Product arr[], int count, const char* id) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(arr[i].product_no, id) == 0) return i;
+    }
+    return -1;
+}
+
+int cariStokRendah(Product arr[], int count, int indices_penampung[]) {
+    int found_count = 0;
+    for (int i = 0; i < count; i++) {
+        if (arr[i].stock < 10) {
+            indices_penampung[found_count] = i;
+            found_count++;
+        }
+    }
+    return found_count;
+}
+
+void urutkanKatalog(Product arr[], int count) {
+    Product temp;
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            if (strcmp(arr[j].product_no, arr[j + 1].product_no) > 0) {
+               
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+
+void masukkanKePosisiTepat(Product arr[], int* count, Product produkBaru) {
+    int pos = 0;
+    while (pos < *count && strcmp(produkBaru.product_no, arr[pos].product_no) > 0) {
+        pos++;
+    }
+    for (int i = *count; i > pos; i--) {
+        arr[i] = arr[i - 1];
+    }
+    arr[pos] = produkBaru;
+    (*count)++;
+}
+
+int inputSatuProduk(Product katalog[], int count, Product* temp_prod, int is_menu_tambah) {
+    char temp_str[22];
+
+    while (1) {
+        if (!bacaString(temp_prod->product_no, sizeof(temp_prod->product_no), "貨品編號 (ID Barang 3 Digit): ")) continue;
+
+        int status = cekValiditasNomor(temp_prod->product_no);
+        if (status == 2 && !is_menu_tambah) {
+            return 0;
+        }
+        else if (status == 0) {
+            printf("[ERROR] Nomor harus TEPAT 3 digit angka!\n");
+            continue;
+        }
+
+        if (cariProduk(katalog, count, temp_prod->product_no) != -1) {
+            printf("[ERROR] ID Barang sudah ada! Tidak boleh duplikat.\n");
+            if (is_menu_tambah) return -1;
+            continue;
+        }
+        break;
+    }
+
+    while (1) {
+        if (!bacaString(temp_prod->name, sizeof(temp_prod->name), "貨品名稱 (Nama Barang): ")) continue;
+        break;
+    }
+    while (1) {
+        if (!bacaString(temp_str, sizeof(temp_str), "單價 (Harga): ")) continue;
+        temp_prod->price = atol(temp_str);
+        if (temp_prod->price <= 0) { printf("[ERROR] Harga harus > 0.\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!bacaString(temp_str, sizeof(temp_str), "庫存量 (Stok): ")) continue;
+        temp_prod->stock = atol(temp_str);
+        if (temp_prod->stock < 0) { printf("[ERROR] Stok tidak boleh minus.\n"); continue; }
+        break;
+    }
+    return 1;
+}
+
+void cetakHeader() {
+    printf("\n%-15s %-25s %-10s %s\n", "貨品編號", "貨品名稱", "單價", "庫存量");
+}
+
+void cetakSatuBarang(Product p) {
+    printf("%-15s %-25s %-10ld %ld\n", p.product_no, p.name, p.price, p.stock);
+}
+
+void cetakKatalog(Product katalog[], int count) {
+    cetakHeader();
+    for (int i = 0; i < count; i++) {
+        cetakSatuBarang(katalog[i]);
+    }
+    if (count == 0) printf("(Belum ada data)\n");
+}
+
+int main() {
+    Product katalog[50] = { 0 };
+    int count = 0;
+    Product temp_prod;
+    char temp_input[22];
+
+    printf("=== SETUP PRODUCT===\n");
+    printf("Masukkan data. Ketik -1 pada Nomor Produk untuk selesai.\n\n");
+
+    while (count < 50) {
+        int hasil = inputSatuProduk(katalog, count, &temp_prod, 0);
+        if (hasil == 0) break; // User ketik -1
+
+        katalog[count] = temp_prod;
+        count++;
+    }
+
+    urutkanKatalog(katalog, count);
+
+    cetakKatalog(katalog, count);
+
+    while (1) {
+        printf("\n請選擇功能 (1)搜尋貨品 (2)搜尋庫存量低於10的貨品 (3)新增貨品 (4)修改貨品資料 (-1)結束: ");
+        if (!bacaString(temp_input, sizeof(temp_input), "")) continue;
+
+        int menu = atoi(temp_input);
+
+        if (menu == -1) {
+            printf("Program Selesai.\n");
+            break;
+        }
+        else if (menu == 1) {
+            char search_id[5];
+            if (!bacaString(search_id, sizeof(search_id), "Masukkan ID untuk dicari: ")) continue;
+
+            int idx = cariProduk(katalog, count, search_id);
+            if (idx == -1) {
+                printf("[WARNING] 找不到此編號的貨品 (Barang tidak ditemukan!).\n");
+                continue;
+            }
+            cetakHeader();
+            cetakSatuBarang(katalog[idx]);
+        }
+        else if (menu == 2) {
+            int indices_rendah[50] = { 0 };
+            int jumlah_ketemu = cariStokRendah(katalog, count, indices_rendah);
+
+            if (jumlah_ketemu == 0) {
+                printf("Semua stok barang aman (>= 10).\n");
+            }
+            else {
+                printf("\n--- Daftar Barang Stok Rendah (< 10) ---\n");
+                cetakHeader();
+                for (int i = 0; i < jumlah_ketemu; i++) {
+                    int index_asli = indices_rendah[i];
+                    cetakSatuBarang(katalog[index_asli]);
+                }
+            }
+        }
+        else if (menu == 3) {
+            if (count >= 50) {
+                printf("[ERROR] Kapasitas gudang penuh!\n");
+                continue;
+            }
+            int hasil = inputSatuProduk(katalog, count, &temp_prod, 1);
+            if (hasil == 1) {
+                masukkanKePosisiTepat(katalog, &count, temp_prod);
+                cetakKatalog(katalog, count);
+            }
+        }
+        else if (menu == 4) {
+            char mod_id[5];
+            if (!bacaString(mod_id, sizeof(mod_id), "Masukkan ID Barang yang ingin diubah: ")) continue;
+
+            int idx = cariProduk(katalog, count, mod_id);
+            if (idx == -1) {
+                printf("[ERROR] Barang tidak ditemukan, modifikasi dibatalkan.\n");
+                continue;
+            }
+
+            printf("Data saat ini:\n");
+            cetakHeader();
+            cetakSatuBarang(katalog[idx]);
+
+            while (1) {
+                if (!bacaString(temp_input, sizeof(temp_input), "Masukkan Harga BARU: ")) continue;
+                long new_price = atol(temp_input);
+                if (new_price <= 0) { printf("[ERROR] Harga harus > 0.\n"); continue; }
+                katalog[idx].price = new_price;
+                break;
+            }
+            while (1) {
+                if (!bacaString(temp_input, sizeof(temp_input), "Masukkan Stok BARU: ")) continue;
+                long new_stock = atol(temp_input);
+                if (new_stock < 0) { printf("[ERROR] Stok tidak boleh minus.\n"); continue; }
+                katalog[idx].stock = new_stock;
+                break;
+            }
+
+            printf("--> [SUCCESS] Data berhasil diubah!\n");
+            cetakKatalog(katalog, count);
+        }
+        else {
+            printf("[ERROR] Pilihan menu tidak valid!\n");
+        }
+    }
+
+    return 0;
+}
