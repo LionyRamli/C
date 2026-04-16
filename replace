@@ -1,0 +1,129 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+
+void cleanBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
+void fungsiCari(char* str) {
+    char search[82];
+    printf("Input a word you want to search: ");
+    fgets(search, sizeof(search), stdin);
+    search[strcspn(search, "\n")] = '\0';
+
+    char* ptr = strstr(str, search);
+    if (ptr != NULL) {
+        printf("The word is \"%s\", found in index: ", search);
+        while (ptr != NULL) {
+            printf("%ld ", ptr - str);
+            ptr = strstr(ptr + strlen(search), search); 
+        }
+        printf("\n");
+    }
+    else {
+        printf("Cant find anything\n");
+    }
+}
+void fungsiGanti(char* str) {
+    printf("String before replacement:%s\n", str);
+
+    char sub1[82];
+    printf("Enter the word to be replaced  :");
+    fgets(sub1, sizeof(sub1), stdin);
+    sub1[strcspn(sub1, "\n")] = '\0';
+
+    char* ptr_awal = strstr(str, sub1);
+    if (ptr_awal != NULL) {
+        printf("The word is\"%s\", found in index: ", sub1);
+        while (ptr_awal != NULL) {
+            printf("%ld ", ptr_awal - str);
+            ptr_awal = strstr(ptr_awal + strlen(sub1), sub1);
+        }
+        printf("\n");
+    }
+    else {
+        printf("Cant found anything\n");
+        return; 
+    }
+
+ 
+    char sub2[82];
+    printf("Enter the string to replace with:");
+    fgets(sub2, sizeof(sub2), stdin);
+    sub2[strcspn(sub2, "\n")] = '\0';
+
+    char temp[205];
+    char* ptr = strstr(str, sub1);
+
+    while (ptr != NULL) {
+        int index = ptr - str;
+        printf("The word is '%s', found in index: %d want to replace it? (y/n)", sub1, index);
+
+        char choice;
+        scanf(" %c", &choice);
+        cleanBuffer();
+
+        if (choice == 'y' || choice == 'Y') {
+            if (strlen(str) - strlen(sub1) + strlen(sub2) > 200) {
+                printf("Error:String is too long, more than 200 karakter!\n");
+                ptr = strstr(ptr + strlen(sub1), sub1);
+            }
+            else {
+                temp[0] = '\0';
+                strncpy(temp, str, index);
+                temp[index] = '\0';
+                strcat(temp, sub2);
+                strcat(temp, ptr + strlen(sub1));
+
+                strcpy(str, temp);
+
+                printf("%s\n", str);
+
+                ptr = strstr(str + index + strlen(sub2), sub1);
+            }
+        }
+        else {
+            ptr = strstr(ptr + strlen(sub1), sub1);
+        }
+    }
+
+    printf("String replaced to :%s\n", str);
+}
+
+int main() {
+    char str[202];
+
+    printf("Please input an Array: ");
+    fgets(str, sizeof(str), stdin);
+
+    if (strchr(str, '\n') == NULL) {
+        printf("\nERROR: Sentence too long! Program is stopped.\n");
+        return 1;
+    }
+    str[strcspn(str, "\n")] = '\0';
+
+    int menu;
+    while (1) {
+        printf("\n1)Find 2)Changes -1)End : ");
+        scanf("%d", &menu);
+        cleanBuffer();
+
+        if (menu == -1) {
+            break; 
+        }
+        else if (menu == 1) {
+            fungsiCari(str);
+        }
+        else if (menu == 2) {
+            fungsiGanti(str); 
+        }
+        else {
+            printf("Your input is not valid, Please try again.\n");
+        }
+    }
+
+    return 0;
+}
