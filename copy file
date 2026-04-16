@@ -1,0 +1,106 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_PATH 260
+
+void clearBuffer() {
+    int c=0;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+int readString(char* buffer, int size, const char* prompt) {
+    printf("%s", prompt);
+    if (fgets(buffer, size, stdin) == NULL) return 0;
+
+    if (buffer[0] == '\n') {
+        printf("[ERROR] Input cannot be empty! Please try again.\n");
+        return 0;
+    }
+    if (strchr(buffer, '\n') == NULL) {
+        printf("[ERROR] Path exceeds maximum length!\n");
+        clearBuffer();
+        return 0;
+    }
+
+    buffer[strcspn(buffer, "\n")] = '\0'; 
+    return 1;
+}
+
+void copyFileProgram() {
+    char sourcePath[MAX_PATH] = {'\0'};
+    char destPath[MAX_PATH] = { '\0' };
+    char overwriteConfirm[10] = { '\0' };
+
+    printf("=== TEXT FILE COPIER ===\n");
+
+    while (1) {
+        if (!readString(sourcePath, sizeof(sourcePath), "Input Source File Path/Name: ")) continue;
+        break;
+    }
+
+    FILE* sourceFile = fopen(sourcePath, "r");
+    if (sourceFile == NULL) {
+        printf("[ERROR] Failed to open source file. Make sure the file exists and the path is correct.\n");
+        return;
+    }
+
+    while (1) {
+        if (!readString(destPath, sizeof(destPath), "Input Destination File Path/Name: ")) continue;
+
+        if (strcmp(sourcePath, destPath) == 0) {
+            printf("[ERROR] Destination cannot be the same as Source!\n");
+            continue;
+        }
+        break;
+    }
+
+    FILE* checkDest = fopen(destPath, "r");
+    if (checkDest != NULL) {
+        fclose(checkDest);
+
+        printf("[WARNING] The destination file '%s' already exists.\n", destPath);
+        while (1) {
+            if (!readString(overwriteConfirm, sizeof(overwriteConfirm), "Do you want to overwrite it? (Y/N): ")) continue;
+
+            overwriteConfirm[0] = toupper(overwriteConfirm[0]);
+
+            if (overwriteConfirm[0] == 'N') {
+                printf("Copy process canceled by user.\n");
+                fclose(sourceFile); 
+                return;
+            }
+            else if (overwriteConfirm[0] == 'Y') {
+                break; 
+            }
+            else {
+                printf("[ERROR] Invalid choice. Type Y for Yes or N for No.\n");
+            }
+        }
+    }
+
+    FILE* destFile = fopen(destPath, "w");
+    if (destFile == NULL) {
+        printf("[ERROR] Failed to create or open destination file for writing.\n");
+        fclose(sourceFile);
+        return;
+    }
+
+    char ch;
+    while ((ch = fgetc(sourceFile)) != EOF) {
+        fputc(ch, destFile);
+    }
+
+    printf("--> [SUCCESS] File copied successfully from '%s' to '%s'.\n", sourcePath, destPath);
+
+    fclose(sourceFile);
+    fclose(destFile);
+}
+
+int main() {
+    copyFileProgram();
+    return 0;
+}
+
