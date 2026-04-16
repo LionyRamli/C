@@ -1,0 +1,33 @@
+#include <stdio.h>
+
+struct time {
+    int hour;
+    int minute;
+};
+
+void printAlarm(int noAlarm, struct time t, int addMinute) {
+    t.minute += addMinute;
+
+    t.hour += t.minute / 60;
+    t.minute = t.minute % 60;
+    t.hour = t.hour % 24;
+
+    printf("Alarm %d: %02d:%02d\n", noAlarm, t.hour, t.minute);
+}
+
+int main() {
+    struct time alarm1 = {0,0};
+
+    printf("Enter first alarm time (hour minute): "); scanf_s("%d %d", &alarm1.hour, &alarm1.minute);
+
+    if (alarm1.hour < 0 || alarm1.hour > 23 || alarm1.minute < 0 || alarm1.minute > 59) {
+       printf("INVALID TIME FORMAT! ALLOWED HOURS ONLY 0-23 AND MINUTES 0-59.\n");
+       return 1; 
+    }
+
+    printf("Alarm 1: %02d:%02d\n", alarm1.hour, alarm1.minute);
+    printAlarm(2, alarm1, 10);
+    printAlarm(3, alarm1, 15);
+
+    return 0;
+}
