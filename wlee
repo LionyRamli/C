@@ -1,0 +1,65 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+#include<stdlib.h>
+
+int cek() {
+	char input1[102];
+	char input2[102];
+
+	if (!fgets(input1, sizeof(input1), stdin)) return -1;
+	if (!fgets(input2, sizeof(input2), stdin)) return -1;
+	
+	input1[strcspn(input1, "\n")] = '\0';
+	input2[strcspn(input2, "\n")] = '\0';
+
+	if (strlen(input1) > 100 || strlen(input2) > 100) {
+		printf("Sorry. The maximun character is 100");
+		return -1;
+	}
+
+	for (int i = 0; input1[i] != '\0'; i++) {
+		if (input1[i] < 'a' || input1[i] > 'z') {
+			printf("Sorry you can only write lowercase letter");
+			return -1;
+		}
+	}
+	for (int i = 0; input2[i] != '\0'; i++) {
+		if (input2[i] < 'a' || input2[i] > 'z') {
+			printf("Sorry you can only write lowercase letter");
+			return -1;
+		}
+	}
+	if (strlen(input1) != strlen(input2)) return 0;
+
+	int letter[26] = { 0 };
+
+	for (int i = 0; input1[i] != '\0'; i++) {
+		letter[input1[i] - 'a']++;
+		letter[input2[i] - 'a']--;
+	}
+	for (int i = 0; i < 26; i++) {
+		if (letter[i] != 0) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int main() {
+	int tes;
+	if (scanf("%d %d", &tes) != 1) {
+		printf("Please input a valid number");
+		return 0;
+	}
+	for (int i = 0; i < tes; i++) {
+		int resp = cek();
+		if (resp == -1) {
+			return 0;
+		}
+		else {
+			printf("%d\n", resp);
+		}
+	}
+	return 0;
+}
