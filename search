@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <string.h>
+
+void find(char* input, char* search);
+
+int main() {
+    char input[102];
+    char search[82];
+
+    printf("Input an array (maks 100 karakter): ");
+    fgets(input, sizeof(input), stdin);
+
+    if (strchr(input, '\n') == NULL) {
+        printf("\nERROR: Too long! Maximum only 100 karakter.\n");
+        printf("Program stopped.\n");
+        return 1;
+    }
+
+    input[strcspn(input, "\n")] = '\0';
+
+    printf("Input a word that you want to find in string (maks 80 karakter): ");
+    fgets(search, sizeof(search), stdin);
+
+    if (strchr(search, '\n') == NULL) {
+        printf("\nERROR: The Keyword is too long! Maksimal hanya 80 karakter.\n");
+        printf("Program is stopped.\n");
+        return 1;
+    }
+
+    search[strcspn(search, "\n")] = '\0';
+
+    find(input, search);
+
+    return 0;
+}
+void find(char* input, char* search) {
+    char* searchptr = strstr(input, search);
+    int count = 0;
+
+    if (searchptr == NULL) {
+        printf("\nWord \"%s\" is never found in this sentence.\n", search);
+        return;
+    }
+
+    printf("\nSearch Result:\n");
+    while (searchptr != NULL) {
+        count++;
+
+        int index = searchptr - input;
+        printf("Found in index: %d\n", index);
+
+        searchptr = strstr(searchptr + 1, search);
+    }
+
+    if (count == 1) {
+        printf("\nThat string in an array string only have one occurence.\n");
+    }
+    else {
+        printf("\nTheres nothing to be shown.\n");
+    }
+}
