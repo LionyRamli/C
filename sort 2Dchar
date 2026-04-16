@@ -1,0 +1,39 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+#include<stdlib.h>
+void bubblesort(char input[][51]);
+
+int main() {
+	char input[5][51];
+	int i;
+	printf("Please maximum 5 sentence and the most maximum character is 50\n");
+	for (i = 0; i < 5; i++) {
+		fgets(input[i], sizeof(input[i]), stdin);
+		if (strchr(input[i], '\n') == NULL) {
+			printf("The maximum character in a sentence is 50\n");
+			return 0;
+		}
+		input[i][strcspn(input[i], "\n")] = '\0';
+	}
+	bubblesort(input);
+	printf("The string in ascending order\n");
+	for (i = 0; i < 5; i++) {
+		printf("%s\n", input[i]);
+	}
+	return 0;
+}
+
+
+void bubblesort(char input[][51]) {
+	char temp[51];
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (strcmp(input[j], input[j + 1]) > 0) {
+				strcpy(temp, input[j]);
+				strcpy(input[j], input[j + 1]);
+				strcpy(input[j + 1], temp);
+			}
+		}
+	}
+}
