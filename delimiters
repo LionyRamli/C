@@ -1,0 +1,70 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int isDuplicate(char tokensArray[][50], int count, char* word) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(tokensArray[i], word) == 0) {
+            return 1; 
+        }
+    }
+    return 0; 
+}
+void cleanAndLower(char* src, char* clean) {
+    int j = 0;
+    for (int i = 0; src[i] != '\0'; i++) {
+        if (isalnum(src[i])) {
+            clean[j] = tolower(src[i]); 
+            j++;
+        }
+    }
+    clean[j] = '\0'; 
+}
+
+void processTokens(char* input) {
+    char uniqueTokens[200][50];
+    int tokenCount = 0;
+
+    const char delimiters[] = " \t\n,*.;:!?()[]{}\"'";
+
+    char* token = strtok(input, delimiters);
+
+    while (token != NULL) {
+        char cleanedToken[50];
+
+        cleanAndLower(token, cleanedToken);
+
+        if (strlen(cleanedToken) > 0) {
+            if (!isDuplicate(uniqueTokens, tokenCount, cleanedToken)) {
+                strcpy(uniqueTokens[tokenCount], cleanedToken);
+                tokenCount++;
+            }
+        }
+
+        token = strtok(NULL, delimiters);
+    }
+
+    printf("Unique tokens:\n");
+    for (int i = 0; i < tokenCount; i++) {
+        printf("%s\n", uniqueTokens[i]);
+    }
+}
+int main() {
+    char input[302];
+
+
+    printf("Enter a string (maximum 300 characters): ");
+
+    if (fgets(input, sizeof(input), stdin) != NULL) {
+
+        if (strchr(input, '\n') == NULL) {
+            printf("Error: Inputan melebihi batas maksimal 300 karakter!\n");
+            return 1; 
+        }
+
+        processTokens(input);
+    }
+
+    return 0;
+}
