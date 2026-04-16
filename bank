@@ -1,0 +1,270 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+typedef struct bank {
+    char acc_no[8];
+    char name[27];
+    long long balance;
+    long loan;
+} Bank;
+
+void bersihkanBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void cetakSatuAkun(Bank b) {
+    printf("\n%-15s %-15s %-15s %s\n", "????", "????", "??", "??");
+    printf("%-15s %-15s %-15lld %ld\n", b.acc_no, b.name, b.balance, b.loan);
+}
+
+void inputDataAwal(char* buffer, int size, const char* prompt) {
+    printf("%s", prompt);
+    if (fgets(buffer, size, stdin) == NULL) {
+        printf("Error reading Input.\n");
+        exit(1);
+    }
+    if (buffer[0] == '\n') {
+        printf("\n[FATAL ERROR] Input cant be empty! Program stopped.\n");
+        exit(1);
+    }
+
+    if (strchr(buffer, '\n') == NULL) {
+        printf("\n[FATAL ERROR] Input is more than maximum capacity! Program Stopped.\n");
+        exit(1);
+    }
+    buffer[strcspn(buffer, "\n")] = '\0';
+}
+
+int inputDataMenu(char* buffer, int size, const char* prompt) {
+    printf("%s", prompt);
+    if (fgets(buffer, size, stdin) == NULL) return 0;
+    if (buffer[0] == '\n') {
+        printf("[ERROR] Input cant be empty! Please try again.\n");
+        return 0;
+    }
+
+    if (strchr(buffer, '\n') == NULL) {
+        printf("[ERROR] Input is too long! Please try again.\n");
+        bersihkanBuffer();
+        return 0;
+    }
+    buffer[strcspn(buffer, "\n")] = '\0';
+    return 1;
+}
+
+int cariAkun(Bank accounts[], int count, const char* acc_no) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(accounts[i].acc_no, acc_no) == 0) return i;
+    }
+    return -1;
+}
+
+
+void cekSaldo(Bank accounts[], int count) {
+    char acc[8];
+    int idx;
+    while (1) {
+        if (!inputDataMenu(acc, sizeof(acc), "???????????(Account Number): ")) continue;
+        idx = cariAkun(accounts, count, acc);
+        if (idx == -1) { printf("[ERROR] ?????.\n"); continue; }
+        break;
+    }
+    cetakSatuAkun(accounts[idx]);
+}
+
+void deposit(Bank accounts[], int count) {
+    char acc[8], amount_str[22];
+    int idx;
+    long long amount;
+
+    while (1) {
+        if (!inputDataMenu(acc, sizeof(acc), "???????????(Account Number): ")) continue;
+        idx = cariAkun(accounts, count, acc);
+        if (idx == -1) { printf("[ERROR] ?????.\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!inputDataMenu(amount_str, sizeof(amount_str), "???????(Deposit Amount): ")) continue;
+        amount = atoll(amount_str);
+        if (amount <= 0) { printf("[ERROR] ??????.\n"); continue; }
+        break;
+    }
+    accounts[idx].balance += amount;
+    cetakSatuAkun(accounts[idx]);
+}
+
+void tarikTunai(Bank accounts[], int count) {
+    char acc[8], amount_str[22];
+    int idx;
+    long long amount;
+
+    while (1) {
+        if (!inputDataMenu(acc, sizeof(acc), "???????????(Account Number): ")) continue;
+        idx = cariAkun(accounts, count, acc);
+        if (idx == -1) { printf("[ERROR] ?????.\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!inputDataMenu(amount_str, sizeof(amount_str), "???????(Withdrawal Amount): ")) continue;
+        amount = atoll(amount_str);
+        if (amount <= 0) { printf("[ERROR] ??????.\n"); continue; }
+        if (amount > accounts[idx].balance) { printf("[ERROR] ????.\n"); continue; }
+        break;
+    }
+    accounts[idx].balance -= amount;
+    cetakSatuAkun(accounts[idx]);
+}
+
+void transfer(Bank accounts[], int count) {
+    char sender_acc[8], receiver_acc[8], amount_str[22];
+    int s_idx, r_idx;
+    long long amount;
+
+    while (1) {
+        if (!inputDataMenu(sender_acc, sizeof(sender_acc), "?????????(Sender Account Number): ")) continue;
+        s_idx = cariAkun(accounts, count, sender_acc);
+        if (s_idx == -1) { printf("[ERROR] ???????.\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!inputDataMenu(receiver_acc, sizeof(receiver_acc), "?????????(Receiver Account Number): ")) continue;
+        r_idx = cariAkun(accounts, count, receiver_acc);
+        if (r_idx == -1) { printf("[ERROR] ???????.\n"); continue; }
+        if (s_idx == r_idx) { printf("[ERROR] ???????!\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!inputDataMenu(amount_str, sizeof(amount_str), "???????(Transfer Amount): ")) continue;
+        amount = atoll(amount_str);
+        if (amount <= 0) { printf("[ERROR] ??????.\n"); continue; }
+        if (amount > accounts[s_idx].balance) { printf("[ERROR] ????.\n"); continue; }
+        break;
+    }
+    accounts[s_idx].balance -= amount;
+    accounts[r_idx].balance += amount;
+    printf("?????\n");
+    printf("????: %s ??: %lld ??: %ld\n", accounts[s_idx].acc_no, accounts[s_idx].balance, accounts[s_idx].loan);
+    printf("????: %s ??: %lld ??: %ld\n", accounts[r_idx].acc_no, accounts[r_idx].balance, accounts[r_idx].loan);
+}
+
+void pinjamUang(Bank accounts[], int count) {
+    char acc[8], amount_str[22];
+    int idx;
+    long long amount;
+
+    while (1) {
+        if (!inputDataMenu(acc, sizeof(acc), "???????????(Account Number): ")) continue;
+        idx = cariAkun(accounts, count, acc);
+        if (idx == -1) { printf("[ERROR] ?????.\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!inputDataMenu(amount_str, sizeof(amount_str), "???????(Loan Amount): ")) continue;
+        amount = atoll(amount_str);
+        if (amount <= 0) { printf("[ERROR] ??????.\n"); continue; }
+        break;
+    }
+    accounts[idx].balance += amount;
+    accounts[idx].loan += (long)amount;
+    cetakSatuAkun(accounts[idx]);
+}
+
+void bayarPinjaman(Bank accounts[], int count) {
+    char acc[8], amount_str[22];
+    int idx;
+    long long amount;
+
+    while (1) {
+        if (!inputDataMenu(acc, sizeof(acc), "???????????(Account Number): ")) continue;
+        idx = cariAkun(accounts, count, acc);
+        if (idx == -1) { printf("[ERROR] ?????.\n"); continue; }
+        break;
+    }
+    while (1) {
+        if (!inputDataMenu(amount_str, sizeof(amount_str), "???????:(Loan Repayment): ")) continue;
+        amount = atoll(amount_str);
+        if (amount <= 0) { printf("[ERROR] ??????(No negative).\n"); continue; }
+        if (amount > accounts[idx].loan) { printf("[ERROR] ????????????(Too much).\n"); continue; }
+        if (amount > accounts[idx].balance) { printf("[ERROR] ??????(Not Enough).\n"); continue; }
+        break;
+    }
+    accounts[idx].balance -= amount;
+    accounts[idx].loan -= (long)amount;
+    cetakSatuAkun(accounts[idx]);
+}
+
+int main() {
+    Bank accounts[10] = { 0 };
+    int count = 0;
+    char temp_input[22];
+
+    inputDataAwal(temp_input, sizeof(temp_input), "How Many Bank Account You Want to Input (Maksimum 10)? ");
+    count = atoi(temp_input);
+
+    if (count < 1 || count > 10) {
+        printf("[FATAL ERROR] The total of the account need to be 1 - 10!\n");
+        return 1;
+    }
+
+    for (int i = 0; i < count; i++) {
+        printf("\nAccount-%d\n", i + 1);
+
+        inputDataAwal(accounts[i].acc_no, sizeof(accounts[i].acc_no), "Account Number (Required 6 char): ");
+        if (strlen(accounts[i].acc_no) != 6) {
+            printf("\n[FATAL ERROR] Account Number needs to be exact 6 character! Program Stopped.\n");
+            exit(1);
+        }
+        for (int j = 0; j < 6; j++) {
+            if (!isdigit(accounts[i].acc_no[j])) {
+                printf("\n[FATAL ERROR] Account Number needs to be Number! Program Stopped.\n");
+                exit(1);
+            }
+        }
+
+        inputDataAwal(accounts[i].name, sizeof(accounts[i].name), "Costumer Name (Max 25 char): ");
+
+        while (1) {
+            inputDataAwal(temp_input, sizeof(temp_input), "Initial balance: ");
+            if (!isdigit(accounts[i].balance)) {
+                printf("\n[FATAL ERROR] Account Number needs to be Number! Program Stopped.\n");
+                exit(1);
+            }
+
+            long long initial_balance = atoll(temp_input);
+
+            if (initial_balance < 0) {
+                printf("[ERROR] Initial balance cant be minus!\n");
+            }
+            else {
+                accounts[i].balance = initial_balance;
+                break;
+            }
+        }
+    }
+
+
+    printf("\n%-15s %-15s %-15s %s\n", "????", "????", "??", "??");
+    for (int i = 0; i < count; i++) {
+        printf("%-15s %-15s %-15lld %ld\n", accounts[i].acc_no, accounts[i].name, accounts[i].balance, accounts[i].loan);
+    }
+
+
+    while (1) {
+        if (!inputDataMenu(temp_input, sizeof(temp_input), "\n????? (1) ????(balance) (2) ??(Deposit) (3) ??(Withdrawal) (4) ??(Transfer) (5) ??(Loan) (6) ??(Repay) (-1) ?? : ")) continue;
+        int pilihan = atoi(temp_input);
+
+        if (pilihan == -1) break;
+        else if (pilihan == 1) cekSaldo(accounts, count);
+        else if (pilihan == 2) deposit(accounts, count);
+        else if (pilihan == 3) tarikTunai(accounts, count);
+        else if (pilihan == 4) transfer(accounts, count);
+        else if (pilihan == 5) pinjamUang(accounts, count);
+        else if (pilihan == 6) bayarPinjaman(accounts, count);
+        else printf("[ERROR] Invalid Options.\n");
+    }
+
+    return 0;
+}
