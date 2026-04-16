@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <stdlib.h> 
+#include <ctype.h> 
+
+int main() {
+    char input[51]; 
+    char* ptr = input; // Pointer untuk melacak posisi baca
+    char* next_ptr; //penanda berhenti
+
+    fgets(input, sizeof(input), stdin);
+    long result = strtol(ptr, &next_ptr, 10);
+
+    // Cek apakah angka pertama valid
+    if (ptr == next_ptr) {
+        printf("Error: wrong expression, the first number isnt found!\n");
+        return 1;
+    }
+
+    ptr = next_ptr; 
+
+    while (*ptr != '\0') {
+        if (isspace(*ptr)) {
+            ptr++;
+            continue;
+        }
+
+        char op = *ptr; 
+
+        if (op != '+' && op != '-') {
+            printf("Error: Operator '%c' isnt allowed! (Only + or -)\n", op);
+            return 1;
+        }
+        ptr++; 
+
+        long next_number = strtol(ptr, &next_ptr, 10);
+
+        if (ptr == next_ptr) {
+            printf("Error: Theres no number next'%c'?\n", op);
+            return 1;
+        }
+
+        // Hitung berdasarkan operator
+        if (op == '+') result += next_number;
+        else if (op == '-') result -= next_number;
+
+        ptr = next_ptr; // Geser pointer untuk putaran berikutnya
+    }
+
+    printf("Ekspresi: %s\n", input);
+    printf("Result: %ld\n", result);
+
+    return 0;
+}
